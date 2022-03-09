@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwebpack_boilerplate=self.webpackChunkwebpack_boilerplate||[]).push([[0],[(e,a,r)=>{r.r(a),r(1)},(e,a,r)=>{r.r(a),r.d(a,{test:()=>s});var s="Test!"},(e,a,r)=>{r.r(a)}],e=>{var a=a=>e(e.s=a);a(0),a(2)}]);
