@@ -1,4 +1,5 @@
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const fs = require('fs');
+const RemoveFilesPlugin = require('remove-files-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
@@ -7,6 +8,7 @@ const SassLintPlugin = require('sass-lint-webpack')
 const ESLintPlugin = require('eslint-webpack-plugin')
 const FileManagerPlugin = require('filemanager-webpack-plugin')
 
+const package = JSON.parse(fs.readFileSync('./package.json'));
 const src = `${__dirname}/src`;
 
 module.exports = {
@@ -20,14 +22,21 @@ module.exports = {
 
 	// Where webpack outputs the assets and bundles
 	output: {
-		path:  __dirname + '/build/enqueue',
+		path:  __dirname + '/build/js',
 		filename: '[name].js',
 	},
 
+	devtool: 'source-map',
+
 	// Customize the webpack build process
 	plugins: [
-		// Removes/cleans build folders and unused assets when rebuilding
-		new CleanWebpackPlugin(),
+		new RemoveFilesPlugin({
+        watch: {
+        	include: [
+	          './build',
+	        ],
+        },
+    }),
 
 		// Copies files from target to destination folder
 		new CopyWebpackPlugin({
@@ -48,11 +57,13 @@ module.exports = {
 		),
 
 		new MiniCssExtractPlugin({
-			filename: 'css/[name].css',
+			filename: '../css/[name].css',
 			chunkFilename: '[id].css',
 		}),
 
-		new SassLintPlugin(),
+		new SassLintPlugin({
+			files: `${src}/**/*.scss`,
+		}),
 
 		new ESLintPlugin({
 			context: 'src',
@@ -60,7 +71,7 @@ module.exports = {
 
 		new BrowserSyncPlugin({
 			proxy: {
-				target: "https://block-theme.local",
+				target: package.localURL,
 			}
 		}),
 
@@ -68,7 +79,7 @@ module.exports = {
       events: {
         onEnd: {
           archive: [
-            { source: 'build', destination: 'dist/block-theme.zip' },
+            { source: 'build', destination: `dist/${package.name}.zip` },
           ],
         },
       },
@@ -81,6 +92,14 @@ module.exports = {
 			// JavaScript: Use Babel to transpile JavaScript files
 			{ test: /\.js$/, use: ['babel-loader'] },
 
+			{ 
+				test: /\.(woff(2)?|eot|ttf|otf|)$/, 
+				type: 'asset/resource',
+				generator: {
+					filename : '../css/fonts/[name][ext][query]',
+				} 
+			},
+
 			{
 				test: /\.(scss|css)$/,
 				use: [
@@ -89,16 +108,20 @@ module.exports = {
 						loader: 'css-loader',
 						options: {
 							importLoaders: 2,
-							sourceMap: false,
+							sourceMap: true,
 							modules: false,
 						},
 					},
-					'postcss-loader',
+          { 
+          	loader: 'postcss-loader', 
+          	options: { sourceMap: true } 
+          },
 					{
             loader: "sass-loader",
             options: {
               // Prefer `dart-sass`
               implementation: require.resolve("dart-sass"),
+              sourceMap: true
             },
           },
 				],
