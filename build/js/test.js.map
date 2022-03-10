@@ -1,0 +1,1 @@
+{"version":3,"file":"test.js","mappings":"iJAAO,IAAMA,EAAO","sources":["webpack://block-theme-starter/./src/js/theme/test.js"],"sourcesContent":["export const test = 'Test!';\n"],"names":["test"],"sourceRoot":""}
